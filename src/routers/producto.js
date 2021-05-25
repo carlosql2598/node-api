@@ -4,6 +4,17 @@ const mysql = require('../conexionbd');
 const { check,validationResult } = require('express-validator');
 
 
+router.get('/', (req,res)=>{
+    // res.json({"mensaje": "si funciona", "estado":200});
+    mysql.query('SELECT * FROM PRODUCTO', (err,rows,fields)=>{
+        if(!err){
+            res.status(201).json({"Productos":rows,"status":201,"mensaje":"Solicitud ejecutada exitosamente."});
+        }else{
+            res.status(500).json({"mensaje":"Hubo un error en la consulta en la BD.", "status":500});
+        }
+    });
+   
+});
 
 router.get('/:id', 
     check('id', 'La variable id no es un numero').notEmpty().isInt(),
