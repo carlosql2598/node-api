@@ -59,25 +59,23 @@ router.post('/login',
 
     const {USU_ALIAS, USU_CONTRASENIA} = req.body;
 
-    let P_USUARIO_VALIDO = 0; // 0 significa que no se encontrarón sus credenciales, por lo tanto no es usuario de la app. 
+    let P_ENCRYPTED_CONTRASENIA = ""; // 0 significa que no se encontrarón sus credenciales, por lo tanto no es usuario de la app. 
 
-    const contraseniaHash = await bcryptjs.hashSync(USU_CONTRASENIA, 8);
-
+    //const contraseniaHash = await bcryptjs.hashSync(USU_CONTRASENIA, 8);
     //let contraseniaHash = "$2a$08$QMMwjo4WWKdinZR3XcZP9.YAHkjzbR5mTuGQJoaG/BQSeqTSeg3CS";
 
+    const query = 'CALL VALIDAR_USUARIO(?, @P_ENCRYPTED_CONTRASENIA);';
+    const query2 = 'SELECT @P_ENCRYPTED_CONTRASENIA;';
 
-
-    const query = 'CALL VALIDAR_USUARIO(?,?, @P_USUARIO_VALIDO);';
-    const query2 = 'SELECT @P_USUARIO_VALIDO;';
-
-    mysql.query(query, [USU_ALIAS,contraseniaHash], (err, result) => {
+    mysql.query(query, [USU_ALIAS], (err, result) => {
             if(!err){
                 mysql.query(query2, (err, result) => {
                     if(!err){
-                        console.log('result  : ', result);
-
-                        P_USUARIO_VALIDO = result[0]["@P_USUARIO_VALIDO"];
-                        if(P_USUARIO_VALIDO == 0){
+                        console.log('result: ', result);
+                        P_ENCRYPTED_CONTRASENIA = result[0]["@P_ENCRYPTED_CONTRASENIA"];
+                        
+                        // Bcrypt compara la contraseña enviada con la encriptda en la bd
+                        if(bcryptjs.compareSync(USU_CONTRASENIA, P_ENCRYPTED_CONTRASENIA) == false){
                             res.status(400).json({"status":400,"mensaje":"Credenciales incorrectas o no existe el usuario."});
                         } else{
                             res.status(200).json({"status":200,"mensaje":"Las credenciales coinciden."});
