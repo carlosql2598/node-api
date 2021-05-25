@@ -4,49 +4,39 @@ const mysql = require('../conexionbd');
 const { check,validationResult } = require('express-validator');
 
 
-router.post('/insertar',  
-    [ 
-        check('IDCLIENTE', 'La variable IDCLIENTE no es un número.').notEmpty().isInt(),
-        check('ORD_MONTO_PAGADO', 'La variable ORD_MONTO_PAGADO no es un número.').notEmpty().isInt(),
-        check('ORD_DIRECCION', 'La variable ORD_DIRECCION debe ser mayor a 6 caracteres.').isLength({min:6}),
-        check('IDPRODUCTO', 'La variable IDPRODUCTO no es un número.').notEmpty().isInt(),
-        check('ORD_DET_CANTIDAD', 'La variable ORD_DET_CANTIDAD no es un número.').notEmpty().isInt()
-    ],
+router.post('/insertar', 
     (req, res) => {
-    
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array()});
-    }
-    
-   
-    const {IDCLIENTE,ORD_MONTO_PAGADO,ORD_DIRECCION, IDPRODUCTO, ORD_DET_CANTIDAD} = req.body;
 
-    let P_USUARIO_COUNT_BOOL = 0;
-    let P_PRODUCTO_COUNT_BOOL = 0;
-    const query = `CALL INSERT_ORDER(?,?,?,?,?,@P_USUARIO_COUNT_BOOL,@P_PRODUCTO_COUNT_BOOL);`;
-    const query2 = `SELECT @P_USUARIO_COUNT_BOOL;`;
-    const query3 = `SELECT @P_PRODUCTO_COUNT_BOOL;`;
+    let datos = [];
 
-    mysql.query(query, [IDCLIENTE,ORD_MONTO_PAGADO, ORD_DIRECCION,IDPRODUCTO,ORD_DET_CANTIDAD], (err, results) => {
+    datos.push(req.body);
+
+    for(let i=0 ; i<datos[0].length;i++){
+        let P_USUARIO_COUNT_BOOL = 0;
+        let P_PRODUCTO_COUNT_BOOL = 0;
+        const query = `CALL INSERT_ORDER(?,?,?,?,?,@P_USUARIO_COUNT_BOOL,@P_PRODUCTO_COUNT_BOOL);`;
+        const query2 = `SELECT @P_USUARIO_COUNT_BOOL;`;
+        const query3 = `SELECT @P_PRODUCTO_COUNT_BOOL;`;
+
+        const {IDCLIENTE,ORD_MONTO_PAGADO,ORD_DIRECCION, IDPRODUCTO, ORD_DET_CANTIDAD } = datos[0][i];
+
+        mysql.query(query, [IDCLIENTE,ORD_MONTO_PAGADO, ORD_DIRECCION,IDPRODUCTO,ORD_DET_CANTIDAD], (err, results) => {
         
             if(!err){
                 mysql.query(
                     query2, (err, results) => {
                         if(!err){
-
+    
                             P_USUARIO_COUNT_BOOL = results[0]["@P_USUARIO_COUNT_BOOL"];
                             mysql.query(query3, (err, results) => {
                                     if(!err){
                                         P_PRODUCTO_COUNT_BOOL = results[0]["@P_PRODUCTO_COUNT_BOOL"];
                                         if(P_USUARIO_COUNT_BOOL== 0 || P_PRODUCTO_COUNT_BOOL== 0 ){
                                             res.status(400).json({"status":400,"mensaje":"No se encontró el usuario o el producto."});
-                                        } else{
-                                            res.status(201).json({"status":201,"mensaje":"Solicitud ejecutada exitosamente."});
                                         }
-
+    
                                     }else{
-                                        res.status(400).json({"status":400,"mensaje":"Hubo un error al ejecutar la consulta SQL."});
+                                            res.status(400).json({"status":400,"mensaje":"Hubo un error al ejecutar la consulta SQL."});
                                     }
                                 }
                             );
@@ -58,8 +48,10 @@ router.post('/insertar',
             }else{
                 res.status(400).json({"status":400,"mensaje":"Hubo un error al ejecutar la consulta SQL."});
             }
-    } );
+        } );
+    }
 
+    res.status(201).json({"status":201,"mensaje":"Solicitud ejecutada exitosamente."});
 });
 
 
