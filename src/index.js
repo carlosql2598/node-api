@@ -17,12 +17,6 @@ app.listen(PORT, ()=> console.log(`Servidor ejecutandose en el puerto ${PORT}`))
 //Configuraciones
 app.use(cors());
 
-app.use(cors({
-  origin: CONSTANTE.origin
-}));
-
-console.log(`CORS Habilitado en el puerto ${CONSTANTE.origin}`);
-
 
 //routers
 app.use('/api/', require('./routers/index'));
