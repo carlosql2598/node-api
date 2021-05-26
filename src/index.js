@@ -3,9 +3,8 @@ const bodyParser = require('body-parser');
 const PORT = process.env.PORT || 3000;
 const app = express();
 const cors = require("cors");
-const CONSTANTE =require("./constantes");
 
-
+// git push heroku main = Para subir los cambios a heroku.
 
 app.use(bodyParser.json());
 app.set('json spaces', 2);
