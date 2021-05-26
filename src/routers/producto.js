@@ -6,7 +6,7 @@ const { check,validationResult } = require('express-validator');
 
 router.get('/', (req,res)=>{
     // res.json({"mensaje": "si funciona", "estado":200});
-    mysql.query('SELECT *FROM producto', (err,rows,fields)=>{
+    mysql.query('select *from producto', (err,rows,fields)=>{
         if(!err){
             res.status(201).json({"Productos":rows,"status":201,"mensaje":"Solicitud ejecutada exitosamente."});
         }else{
