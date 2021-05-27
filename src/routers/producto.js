@@ -3,9 +3,8 @@ const router = Router();
 const mysql = require('../conexionbd');
 const { check,validationResult } = require('express-validator');
 
-
+//LISTAR PRODUCTOS
 router.get('/', (req,res)=>{
-    // res.json({"mensaje": "si funciona", "estado":200});
     mysql.query('SELECT * FROM PRODUCTO', (err,rows,fields)=>{
         if(!err){
             res.status(201).json({"Productos":rows,"status":201,"mensaje":"Solicitud ejecutada exitosamente."});
