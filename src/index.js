@@ -3,9 +3,8 @@ const bodyParser = require('body-parser');
 const PORT = process.env.PORT || 3000;
 const app = express();
 const cors = require("cors");
-const CONSTANTE =require("./constantes");
 
-
+// git push heroku main = Para subir los cambios a heroku.
 
 app.use(bodyParser.json());
 app.set('json spaces', 2);
@@ -16,12 +15,6 @@ app.listen(PORT, ()=> console.log(`Servidor ejecutandose en el puerto ${PORT}`))
 
 //Configuraciones
 app.use(cors());
-
-app.use(cors({
-  origin: CONSTANTE.origin
-}));
-
-console.log(`CORS Habilitado en el puerto ${CONSTANTE.origin}`);
 
 
 //routers
