@@ -10,7 +10,7 @@ router.post('/insertar',
     let datos = [];
 
     datos.push(req.body);
-
+    console.log(req.body);
     for(let i=0 ; i<datos[0].length;i++){
         let P_USUARIO_COUNT_BOOL = 0;
         let P_PRODUCTO_COUNT_BOOL = 0;
