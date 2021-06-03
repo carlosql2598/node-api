@@ -10,46 +10,80 @@ router.post('/insertar',
     let datos = [];
 
     datos.push(req.body);
-    console.log(req.body);
-    for(let i=0 ; i<datos[0].length;i++){
-        let P_USUARIO_COUNT_BOOL = 0;
-        let P_PRODUCTO_COUNT_BOOL = 0;
-        const query = `CALL INSERT_ORDER(?,?,?,?,?,@P_USUARIO_COUNT_BOOL,@P_PRODUCTO_COUNT_BOOL);`;
-        const query2 = `SELECT @P_USUARIO_COUNT_BOOL;`;
-        const query3 = `SELECT @P_PRODUCTO_COUNT_BOOL;`;
-
-        const {IDCLIENTE,ORD_MONTO_PAGADO,ORD_DIRECCION, IDPRODUCTO, ORD_DET_CANTIDAD } = datos[0][i];
-
-        mysql.query(query, [IDCLIENTE,ORD_MONTO_PAGADO, ORD_DIRECCION,IDPRODUCTO,ORD_DET_CANTIDAD], (err, results) => {
-        
-            if(!err){
-                mysql.query(
-                    query2, (err, results) => {
-                        if(!err){
     
-                            P_USUARIO_COUNT_BOOL = results[0]["@P_USUARIO_COUNT_BOOL"];
-                            mysql.query(query3, (err, results) => {
-                                    if(!err){
-                                        P_PRODUCTO_COUNT_BOOL = results[0]["@P_PRODUCTO_COUNT_BOOL"];
-                                        if(P_USUARIO_COUNT_BOOL== 0 || P_PRODUCTO_COUNT_BOOL== 0 ){
-                                            res.status(400).json({"status":400,"mensaje":"No se encontró el usuario o el producto."});
-                                        }
     
-                                    }else{
-                                            res.status(400).json({"status":400,"mensaje":"Hubo un error al ejecutar la consulta SQL."});
-                                    }
-                                }
-                            );
-                        }else{
-                            res.status(400).json({"status":400,"mensaje":"Hubo un error al ejecutar la consulta SQL."});
-                        }
+    const IDCLIENTE = req.body[0].IDCLIENTE;
+    const MONTO_PAGADO = req.body[0].ORD_MONTO_PAGADO;
+    const ORD_DIRECCION =  req.body[0].ORD_DIRECCION;
+    const ORD_DET_CANTIDAD = req.body[0].ORD_DET_CANTIDAD;
+    
+    let P_USUARIO_COUNT_BOOL = 0;
+    let P_ORDER_ID;
+
+    const queryA = `CALL INSERT_ORDERS(?,?,?,?,@P_USUARIO_COUNT_BOOL,@P_ORDER_ID);`;
+
+    const queryB= `SELECT @P_USUARIO_COUNT_BOOL;`;
+    const queryC = `SELECT @P_ORDER_ID;`;
+
+
+    mysql.query( queryA, [IDCLIENTE, MONTO_PAGADO, ORD_DIRECCION, ORD_DET_CANTIDAD],  (err, results) => {
+
+        if(err){
+            res.status(400).json({"status":400,"mensaje":"Hubo un error al ejecutar la consulta SQL."});
+        } else{
+            mysql.query( queryB, (err, results) => {
+
+                if(err){
+                    res.status(400).json({"status":400,"mensaje":"Hubo un error al ejecutar la consulta SQL."});
+                } else{
+                    P_USUARIO_COUNT_BOOL = results[0]["@P_USUARIO_COUNT_BOOL"];
+                    
+                    if(P_USUARIO_COUNT_BOOL = 0){
+                        res.status(400).json({"status":400,"mensaje":"No se encontró el usuario solicitado."});
                     }
-                );
-            }else{
-                res.status(400).json({"status":400,"mensaje":"Hubo un error al ejecutar la consulta SQL."});
+                }
+            } );
+        }
+
+    });
+
+    mysql.query(queryC, (err, results) => {
+        if(err){
+            res.status(400).json({"status":400,"mensaje":"Hubo un error al ejecutar la consulta SQL."});
+        } else{
+            P_ORDER_ID = results[0]["@P_ORDER_ID"];
+
+            for(let i=0 ; i<datos[0].length;i++){
+                let P_PRODUCTO_COUNT_BOOL = 0;
+                const query = `CALL INSERT_ORDERS_DETAILS(?,?,?,@P_PRODUCTO_COUNT_BOOL);`;
+                const query3 = `SELECT @P_PRODUCTO_COUNT_BOOL;`;
+        
+                
+                const IDPRODUCTO = datos[0][i].IDPRODUCTO;
+                const ORD_DET_CANTIDAD= datos[0][i].ORD_DET_CANTIDAD;
+        
+                mysql.query(query, [P_ORDER_ID,IDPRODUCTO, ORD_DET_CANTIDAD], (err, results) => {
+                
+                    if(!err){
+                        mysql.query(query3, (err, results) => {
+                            if(!err){
+                                P_PRODUCTO_COUNT_BOOL = results[0]["@P_PRODUCTO_COUNT_BOOL"];
+
+                                if( P_PRODUCTO_COUNT_BOOL== 0 ){
+                                    res.status(400).json({"status":400,"mensaje":"No se encontró el producto."});
+                                }
+                            }else{
+                                    res.status(400).json({"status":400,"mensaje":"Hubo un error al ejecutar la consulta SQL."});
+                                }
+                            }
+                        );
+                    }else{
+                        res.status(400).json({"status":400,"mensaje":"Hubo un error al ejecutar la consulta SQL."});
+                    }
+                } );
             }
-        } );
-    }
+        }
+    } );
 
     res.status(201).json({"status":201,"mensaje":"Solicitud ejecutada exitosamente."});
 });
