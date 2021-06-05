@@ -5,9 +5,9 @@ const { check,validationResult } = require('express-validator');
 
 //LISTAR PRODUCTOS
 router.get('/', (req,res)=>{
-    mysql.query('SELECT * FROM PRODUCTO', (err,rows,fields)=>{
+    mysql.query('SELECT * FROM producto', (err,rows,fields)=>{
         if(!err){
-            res.status(201).json({"Productos":rows,"status":201,"mensaje":"Solicitud ejecutada exitosamente."});
+            res.status(200).json({"Productos":rows,"status":200,"mensaje":"Solicitud ejecutada exitosamente."});
         }else{
             res.status(500).json({"mensaje":"Hubo un error en la consulta en la BD.", "status":500});
         }
@@ -28,7 +28,7 @@ router.get('/:id',
 
         const query = 'SELECT  P.IDPRODUCTO,  P.PRO_NOMBRE, P.PRO_DESCRIPCION, P.PRO_PRECIO, P.PRO_STOCK, ' +
         'PRI.PRO_IMG ' +
-        'FROM PRODUCTO P INNER JOIN PRODUCTO_IMG PRI ' +
+        'FROM producto P INNER JOIN producto_img PRI ' +
         'ON P.IDPRODUCTO = PRI.IDPRODUCTO ' +
         'WHERE P.IDPRODUCTO = ?;';
 
@@ -59,9 +59,9 @@ router.get('/valoracion/:val',
         
         const query = 'SELECT  P.IDPRODUCTO,  P.PRO_NOMBRE, P.PRO_DESCRIPCION, P.PRO_PRECIO, P.PRO_STOCK, '+
         'PRI.PRO_IMG ' +
-        'FROM PRODUCTO P INNER JOIN PRODUCTO_IMG PRI ' +
+        'FROM producto P INNER JOIN producto_img PRI ' +
         'ON P.IDPRODUCTO = PRI.IDPRODUCTO ' +
-        'INNER JOIN CALIFICACIONES C ' +
+        'INNER JOIN calificaciones C ' +
         'ON P.IDPRODUCTO = C.IDPRODUCTO ' +
         'WHERE C.CA_CALIFICACION = ?;';
         
