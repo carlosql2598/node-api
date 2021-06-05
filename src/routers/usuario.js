@@ -93,7 +93,45 @@ router.post('/login',
 
 });
 
+//LISTAR LOS PRODUCTOS ENTRE UN RANGO DE PRECIOS
+router.get('/precios/:val1/:val2', 
+    [ 
+        check('val1', 'La variable val1 no es un numero').notEmpty().isInt(),
+        check('val2', 'La variable val2 no es un numero').notEmpty().isInt()
+    ],
+    (req, res) => {
 
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ errors: errors.array()});
+        }
+
+        const {val1,val2} = req.params;
+        
+        const query = `select p.PRO_NOMBRE, p.PRO_PRECIO, p.PRO_STOCK, (select round(avg(c.CA_CALIFICACION),0) FROM calificaciones c where c.IDPRODUCTO = p.IDPRODUCTO) as calificacion 
+		from producto p left join calificaciones c on (p.IDPRODUCTO = c.IDPRODUCTO) 
+		group by p.IDPRODUCTO having p.PRO_PRECIO >= ? and p.PRO_PRECIO <= ?`;
+        /* "select p.PRO_NOMBRE, (select round(avg(c.CA_CALIFICACION),0) FROM calificaciones c where c.IDPRODUCTO = p.IDPRODUCTO) as calificacion 
+		    from calificaciones c inner join producto p on (c.IDPRODUCTO = p.IDPRODUCTO) group by p.PRO_NOMBRE"; */
+        /* 'SELECT  P.IDPRODUCTO,  P.PRO_NOMBRE, P.PRO_DESCRIPCION, P.PRO_PRECIO, P.PRO_STOCK, '+
+        'PRI.PRO_IMG ' +
+        'FROM PRODUCTO P INNER JOIN PRODUCTO_IMG PRI ' +
+        'ON P.IDPRODUCTO = PRI.IDPRODUCTO ' +
+        'INNER JOIN CALIFICACIONES C ' +
+        'ON P.IDPRODUCTO = C.IDPRODUCTO ' +
+        'WHERE C.CA_CALIFICACION = ?;'; */
+        
+
+        mysql.query(query, [val1,val2], (err, rows) => {
+            if(!err){
+                res.status(200).json(rows);
+            }else{
+                res.status(500).json({"mensaje":"Hubo un error en la consulta en la BD.", "status":500});
+            }
+        } );
+        
+    }
+);
 
 module.exports = router;
 
