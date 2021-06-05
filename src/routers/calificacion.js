@@ -36,6 +36,39 @@ router.post('/insertar',
 });
 
 
+//LISTAR TODOS LOS COMENTARIOS CON RESPECTO A UN PRODUCTO.
+
+router.get('/obtenerComentariosProductos/:id', 
+    [
+        check('id', 'La variable id no es un número').notEmpty().isInt()
+    ],
+    (req, res)=> {
+        
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ errors: errors.array()});
+        }
+    
+        const {id} = req.params;
+    
+        const query = 'SELECT *FROM calificaciones WHERE IDPRODUCTO = ?;';
+    
+    
+        mysql.query(query, [id], (err, rows) => {
+            if(!err){
+                res.status(200).json(rows);
+            }else{
+                res.status(500).json({"mensaje":"Hubo un error en la consulta en la BD.", "status":500});
+            }
+        } );
+
+    }
+
+);
+
+
+
+
 //LISTAR LOS COMENTARIOS HECHA POR UN USUARIO.
 router.get('/obtenerComentarios/:id', 
     [ 
