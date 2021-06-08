@@ -118,5 +118,41 @@ router.get('/obtenerOrden/:idUsuario',
 
 });
 
+// MOSTRAR HISTORIAL DE PEDIDOS. 
+router.get('/historial/:idUsuario',
+    [ 
+        check('idUsuario', 'La variable idUsuario no es un número.').notEmpty().isInt()
+    ],
+    (req, res) => {
+
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array()});
+    }
+
+    const {idUsuario} = req.params;
+    
+    const query = "SELECT DISTINCT P.PRO_NOMBRE, OD.ORD_DET_CANTIDAD, OD.ORD_DET_PRECIO, O.ORD_MONTO_PAGADO, O.ORD_FECH_REG, PI. PRO_IMG\
+    FROM ORDERS_DETAILS OD \
+    INNER JOIN PRODUCTO P \
+    ON P.IDPRODUCTO = OD.IDPRODUCTO \
+    INNER JOIN ORDERS O \
+    ON O.IDORDERS = OD.IDORDERS \
+    INNER JOIN PRODUCTO_IMG PI \
+    ON PI.IDPRODUCTO = P.IDPRODUCTO \
+    WHERE O.IDCLIENTE = ? \
+    ORDER BY O.ORD_FECH_REG;"
+
+
+    mysql.query(query, [idUsuario], (err, rows) => {
+        if(!err){
+            res.status(200).json({"resultado": rows, "status": 200});
+        }else{
+            res.status(500).json({"mensaje": "Hubo un error en la consulta en la BD.", "status": 500});
+        }
+    } );
+
+});
+
 
 module.exports = router;
