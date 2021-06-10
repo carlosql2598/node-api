@@ -51,7 +51,9 @@ router.get('/obtenerComentariosProductos/:id',
     
         const {id} = req.params;
     
-        const query = 'SELECT *FROM calificaciones WHERE IDPRODUCTO = ?;';
+        const query = 'SELECT C.CA_CALIFICACION, C.CA_COMENTARIO, C.CA_FECHA, U.USU_NOMBRES , U.USU_APELLIDOS  FROM ' + 
+        ' calificaciones C INNER JOIN usuarios U ON (C.IDCLIENTE = U.IDCLIENTE) ' +
+        ' WHERE IDPRODUCTO = ? order by C.CA_FECHA desc;';
     
     
         mysql.query(query, [id], (err, rows) => {
