@@ -5,9 +5,30 @@ const { check,validationResult } = require('express-validator');
 
 //LISTAR PRODUCTOS
 router.get('/', (req,res)=>{
-    mysql.query('SELECT * FROM producto', (err,rows,fields)=>{
+    mysql.query(`select p.IDPRODUCTO, p.PRO_NOMBRE, p.PRO_DESCRIPCION, p.PRO_PRECIO , (select round(avg(c.CA_CALIFICACION),0) FROM calificaciones c where c.IDPRODUCTO = p.IDPRODUCTO) as calificacion 
+                from producto p left join calificaciones c on (p.IDPRODUCTO = c.IDPRODUCTO) 
+                group by p.IDPRODUCTO `, (err,rows,fields)=>{
         if(!err){
             res.status(200).json({"Productos":rows,"status":200,"mensaje":"Solicitud ejecutada exitosamente."});
+        }else{
+            res.status(500).json({"mensaje":"Hubo un error en la consulta en la BD.", "status":500});
+        }
+    });
+   
+});
+
+router.get('/productoCategoria', (req,res)=>{
+    mysql.query(`SELECT P.IDPRODUCTO ,P.PRO_NOMBRE, P.PRO_DESCRIPCION,P.PRO_PRECIO, P.PRO_STOCK , c.CAT_NOMBRE, m.PRO_IMG FROM producto_img m right join producto P
+                on p.IDPRODUCTO= m.IDPRODUCTO
+                left JOIN producto_categoria pc
+                on pc.IDPRODUCTO = p.IDPRODUCTO
+                left join categoria c
+                on c.IDCATEGORIA= pc.IDCATEGORIA
+                ORDER BY P.IDPRODUCTO;`, 
+                (err,rows,fields)=>{
+
+        if(!err){
+            res.status(200).json({"ProductoPorCategoria":rows,"status":200,"mensaje":"Solicitud ejecutada exitosamente."});
         }else{
             res.status(500).json({"mensaje":"Hubo un error en la consulta en la BD.", "status":500});
         }
@@ -120,5 +141,6 @@ router.get('/valoracion/:val',
         
     }
 );
+
 
 module.exports = router;
